@@ -1,0 +1,28 @@
+name: Rust-ML
+
+on: 
+  push:
+    branches:
+      - main
+    pull_request: 
+      - main 
+    
+jobs: 
+  build: 
+    runs-on: ubuntu-latest
+
+    steps: 
+      - name: Set up Rust
+        uses: actions/checkout@v2
+      
+      - name: Install cargo audit
+        run: cargo install cargo-audit
+
+      - name: Build
+        run: cargo build --verbose
+
+      - name: Test
+        run: cargo test --verbose 
+
+      - name: Audit 
+        run: cargo audit   
