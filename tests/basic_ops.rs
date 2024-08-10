@@ -13,7 +13,7 @@ fn vector_sum1() {
 
 #[test]
 fn vector_sum_uneven_len() {
-    let vec1 = vec![1.0, 2.0, 2.0];
+    let vec1 = vec![1.0, 2.0];
     let vec2 = vec![4.0, 5.0, 6.0];
     let result = Matrix::vector_sum(vec1, vec2);
     assert_eq!(result, None);
