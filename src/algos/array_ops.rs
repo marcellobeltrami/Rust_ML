@@ -36,6 +36,23 @@ impl Matrix {
         }
     }
 
+    // Vector Multiplication.
+    pub fn vector_dot(vec_1: Vec<f64>, vec_2: Vec<f64>) -> Option<f64>{
+        if vec_1.len() != vec_2.len() {
+            return None; // Vectors must be the same length
+        } else {
+            let mut  dot_pr = 0.0;
+            for (i,num1) in vec_1.iter().enumerate(){
+                let mult =  num1 * vec_2[i];
+
+                dot_pr += mult 
+
+            }
+            return Some(dot_pr);
+
+        }
+    }
+
     // Matrix Multiplication.
     pub fn mx_mult(&self, matrix_2: Vec<Vec<f64>>) -> Option<Vec<Vec<f64>>>{
         todo!();
