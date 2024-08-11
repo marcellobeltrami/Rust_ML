@@ -1,8 +1,12 @@
-pub struct Matrix {
-    pub main_matrix: Vec<Vec<f64>>,
-}
+use std::vec;
 
-impl Matrix {
+
+// Linear Algebra Vector operations
+pub struct Vector {}
+
+impl Vector {
+    
+    // Vector sum
     pub fn vector_sum(vec_1: Vec<f64>, vec_2: Vec<f64>) -> Option<Vec<f64>> {
         if vec_1.len() != vec_2.len() {
             return None; // Vectors must be the same length
@@ -13,30 +17,20 @@ impl Matrix {
         }
     }
 
-    // Matrix Sum
-    pub fn mx_sum(&self, matrix_2: Vec<Vec<f64>>) -> Option<Vec<Vec<f64>>> {
-        if self.main_matrix.len() != matrix_2.len() {
-            return None; // Vectors must be the same length
-        } else {
-            let mut result: Vec<Vec<f64>> = vec![];
-            for (i, vector) in self.main_matrix.iter().enumerate() {
-                if matrix_2.get(i).is_none() || vector.len() != matrix_2[i].len() {
-                    return None; // Matrices must have the same row lengths
-                }
+      // Scalar multiplication 
+      pub fn scalar_mult(vec1: Vec<f64>, scalar_val:f64)->Option<Vec<f64>>{
 
-                // Matches corresponding rows and carries out vector sum.
-                match Self::vector_sum(vector.clone(), matrix_2[i].clone()) {
-                    Some(sum_row) => result.push(sum_row),
-                    None => return None, // If vector_sum fails, propagate None
-                }
-            }
+        let mut res_vec: Vec<f64> = vec![];
 
-            // returns summed matrix.
-            Some(result)
+        for i in vec1{
+            res_vec.push(i*scalar_val); 
         }
+
+        return Some(res_vec);
+
     }
 
-    // Vector Multiplication.
+    // Vector Dot Product
     pub fn vector_dot(vec_1: Vec<f64>, vec_2: Vec<f64>) -> Option<f64>{
         if vec_1.len() != vec_2.len() {
             return None; // Vectors must be the same length
@@ -52,6 +46,43 @@ impl Matrix {
 
         }
     }
+
+
+}
+
+
+
+// Linear Algebra Matrix operations
+pub struct Matrix {
+    pub main_matrix: Vec<Vec<f64>>,
+}
+
+impl Matrix {
+  
+    // Matrix Sum
+    pub fn mx_sum(&self, matrix_2: Vec<Vec<f64>>) -> Option<Vec<Vec<f64>>> {
+        if self.main_matrix.len() != matrix_2.len() {
+            return None; // Vectors must be the same length
+        } else {
+            let mut result: Vec<Vec<f64>> = vec![];
+            for (i, vector) in self.main_matrix.iter().enumerate() {
+                if matrix_2.get(i).is_none() || vector.len() != matrix_2[i].len() {
+                    return None; // Matrices must have the same row lengths
+                }
+
+                // Matches corresponding rows and carries out vector sum.
+                match Vector::vector_sum(vector.clone(), matrix_2[i].clone()) {
+                    Some(sum_row) => result.push(sum_row),
+                    None => return None, // If vector_sum fails, propagate None
+                }
+            }
+
+            // returns summed matrix.
+            Some(result)
+        }
+    }
+
+  
 
     // Matrix Multiplication.
     pub fn mx_mult(&self, matrix_2: Vec<Vec<f64>>) -> Option<Vec<Vec<f64>>>{
