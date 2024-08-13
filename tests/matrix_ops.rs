@@ -10,7 +10,7 @@ fn mx_sum() {
 
     assert_eq!(
         mx1.mx_sum(mx_2),
-        Some(vec![vec![2.0, 6.0], vec![4.0, 10.0]])
+        Ok(vec![vec![2.0, 6.0], vec![4.0, 10.0]])
     );
 }
 
@@ -22,5 +22,7 @@ fn mx_sum_uneven() {
 
     let mx_2: Vec<Vec<f64>> = vec![vec![1.0], vec![2.0, 5.0]];
 
-    assert_eq!(mx1.mx_sum(mx_2), None);
+    let result = mx1.mx_sum(mx_2);
+
+    assert_eq!(result, Err("Matrices must have the same row lengths".to_string()), "Expected Matrices must have the same row lengths but got {:?}", result);
 }

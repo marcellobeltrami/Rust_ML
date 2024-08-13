@@ -5,9 +5,9 @@ pub struct Vector {}
 
 impl Vector {
     // Vector sum
-    pub fn vector_sum(vec_1: Vec<f64>, vec_2: Vec<f64>) -> Option<Vec<f64>> {
+    pub fn vector_sum(vec_1: Vec<f64>, vec_2: Vec<f64>) -> Result<Vec<f64>, String> {
         if vec_1.len() != vec_2.len() {
-            return None; // Vectors must be the same length
+            return Err("Vectors must have equal lengths".to_string()); // Vectors must be the same length
         } else {
             let mut result = vec![];
 
@@ -17,28 +17,30 @@ impl Vector {
                 result.push(sum);
             }
 
-            return Some(result);
+            return Ok(result);
         }
     }
 
     // Scalar multiplication
-    pub fn scalar_mult(vec1: Vec<f64>, scalar_val: f64) -> Option<Vec<f64>> {
+    pub fn scalar_mult(vec1: Vec<f64>, scalar_val: f64) -> Result<Vec<f64>, String> {
         let mut res_vec: Vec<f64> = vec![];
-        if vec1.len() == 0 {
-            return None; // Vector Empty
+        if vec1.is_empty() == true {
+            return Err("Vector cannot be empty".to_string()); // Vector Empty
         } else {
             for i in vec1 {
                 res_vec.push(i * scalar_val);
             }
 
-            return Some(res_vec);
+            return Ok(res_vec);
         }
     }
 
     // Vector Dot Product
-    pub fn vector_dot(vec_1: Vec<f64>, vec_2: Vec<f64>) -> Option<f64> {
+    pub fn vector_dot(vec_1: Vec<f64>, vec_2: Vec<f64>) -> Result<f64, String> {
         if vec_1.len() != vec_2.len() {
-            return None; // Vectors must be the same length
+            return Err("Vectors must have equal length".to_string()); // Vectors must be the same length
+        } else if vec_1.is_empty() || vec_2.is_empty(){
+            return Err("Vector cannot be empty".to_string())
         } else {
             let mut dot_pr = 0.0;
             for (i, num1) in vec_1.iter().enumerate() {
@@ -46,37 +48,37 @@ impl Vector {
 
                 dot_pr += mult
             }
-            return Some(dot_pr);
+            return Ok(dot_pr);
         }
     }
 
     // Euclidean Norm
-    pub fn norm_euclidean(vec1: Vec<f64>) -> Option<f64> {
+    pub fn norm_euclidean(vec1: Vec<f64>) -> Result<f64, String> {
         if vec1.is_empty() == true {
-            return None;
+            return Err("Vector cannot be empty".to_string());
         } else {
             let powered_vec: f64 = vec1.iter().map(|&a| a * a).sum();
-            return Some(powered_vec.sqrt());
+            return Ok(powered_vec.sqrt());
         }
     }
 
     // Manhattan Norm
-    pub fn norm_manhattan(vec1: Vec<f64>) -> Option<f64> {
+    pub fn norm_manhattan(vec1: Vec<f64>) -> Result<f64, String> {
         if vec1.is_empty() == true {
-            return None;
+            return Err("Vector cannot be empty".to_string());
         } else {
             let mut run_sum = 0.0;
             for i in vec1 {
                 run_sum += i.abs();
             }
-            return Some(run_sum);
+            return Ok(run_sum);
         }
     }
 
     // Infinity Norm
-    pub fn norm_infinity(vec1: Vec<f64>) -> Option<f64> {
+    pub fn norm_infinity(vec1: Vec<f64>) -> Result<f64, String> {
         if vec1.is_empty() == true {
-            return None;
+            Err("Vector cannot be empty".to_string())
         } else {
             // Magic spell to find the max value of a vector.
             fn max_of_vector(v: &[f64]) -> Option<f64> {
@@ -93,14 +95,19 @@ impl Vector {
             }
 
             match max_of_vector(&abs_vec) {
-                Some(max) => return Some(max),
-                None => return None,
+                Some(max) => return Ok(max),
+                None => return Err("Unknown error has occurred".to_string()),
             }
         }
     }
 
     // Vector multiplication. Return a matrix with multiplied vectors.
-    pub fn vector_mult(vec1: Vec<f64>, vec2: Vec<f64>) -> Option<Vec<Vec<f64>>> {
+    pub fn vector_mult(vec1: Vec<f64>, vec2: Vec<f64>) -> Result<Vec<Vec<f64>>, String> {
+        
+        if vec1.is_empty() || vec2.is_empty() {
+            return Err("Vectors cannot be empty".to_string())
+        }
+        
         let mut mult_vc: Vec<Vec<f64>> = vec![];
 
         for num in vec1.iter() {
@@ -109,7 +116,7 @@ impl Vector {
             mult_vc.push(vec_tmp);
         }
 
-        return Some(mult_vc);
+        return Ok(mult_vc);
     }
 }
 
@@ -125,25 +132,25 @@ impl Matrix {
     }
 
     // Matrix Sum
-    pub fn mx_sum(&self, matrix_2: Vec<Vec<f64>>) -> Option<Vec<Vec<f64>>> {
+    pub fn mx_sum(&self, matrix_2: Vec<Vec<f64>>) -> Result<Vec<Vec<f64>>, String> {
         if self.main_matrix.len() != matrix_2.len() {
-            return None; // Vectors must be the same length
+            return Err("Matrices must have same shape".to_string()); // Vectors must be the same length
         } else {
             let mut result: Vec<Vec<f64>> = vec![];
             for (i, vector) in self.main_matrix.iter().enumerate() {
                 if matrix_2.get(i).is_none() || vector.len() != matrix_2[i].len() {
-                    return None; // Matrices must have the same row lengths
+                    return Err("Matrices must have the same row lengths".to_string()); // Matrices must have the same row lengths
                 }
 
                 // Matches corresponding rows and carries out vector sum.
                 match Vector::vector_sum(vector.clone(), matrix_2[i].clone()) {
-                    Some(sum_row) => result.push(sum_row),
-                    None => return None, // If vector_sum fails, propagate None
+                    Ok(sum_row) => result.push(sum_row),
+                    Err(e) => return Err(e), // Pass along the error from vector_sum
                 }
             }
 
             // returns summed matrix.
-            Some(result)
+            Ok(result)
         }
     }
 
