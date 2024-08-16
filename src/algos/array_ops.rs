@@ -1,4 +1,5 @@
 use std::vec;
+use std::collections::HashMap;
 
 // Linear Algebra Vector operations
 pub struct Vector {}
@@ -127,39 +128,104 @@ pub struct Matrix {
 
 impl Matrix {
     // Matrix Subtract
-    pub fn mx_subtract(&self, matrix_2: Vec<Vec<f64>>) -> Option<Vec<Vec<f64>>> {
-        todo!();
+    pub fn mx_subtract(&self, matrix_2: Vec<Vec<f64>>) -> Result<Vec<Vec<f64>>, String> {
+        if self.main_matrix.len() != matrix_2.len() || self.main_matrix[0].len() != matrix_2[0].len() {
+            return Err("Matrices must have the same dimensions".to_string());
+        }
+
+        let mut result: Vec<Vec<f64>> = vec![];
+
+        for (i, row) in self.main_matrix.iter().enumerate() {
+            let mut row_result: Vec<f64> = vec![];
+            for (j, num) in row.iter().enumerate() {
+                let sub = num - matrix_2[i][j];
+                row_result.push(sub);
+            }
+            result.push(row_result);
+        }
+
+        return Ok(result);
     }
 
     // Matrix Sum
     pub fn mx_sum(&self, matrix_2: Vec<Vec<f64>>) -> Result<Vec<Vec<f64>>, String> {
         if self.main_matrix.len() != matrix_2.len() {
             return Err("Matrices must have same shape".to_string()); // Vectors must be the same length
-        } else {
-            let mut result: Vec<Vec<f64>> = vec![];
-            for (i, vector) in self.main_matrix.iter().enumerate() {
-                if matrix_2.get(i).is_none() || vector.len() != matrix_2[i].len() {
-                    return Err("Matrices must have the same row lengths".to_string()); // Matrices must have the same row lengths
-                }
+        }
 
-                // Matches corresponding rows and carries out vector sum.
-                match Vector::vector_sum(vector.clone(), matrix_2[i].clone()) {
-                    Ok(sum_row) => result.push(sum_row),
-                    Err(e) => return Err(e), // Pass along the error from vector_sum
-                }
+        let mut result: Vec<Vec<f64>> = vec![];
+        
+        for (i, vector) in self.main_matrix.iter().enumerate() {
+            if matrix_2.get(i).is_none() || vector.len() != matrix_2[i].len() {
+                return Err("Matrices must have the same row lengths".to_string()); // Matrices must have the same row lengths
             }
 
-            // returns summed matrix.
-            Ok(result)
+            // Matches corresponding rows and carries out vector sum.
+            match Vector::vector_sum(vector.clone(), matrix_2[i].clone()) {
+                Ok(sum_row) => result.push(sum_row),
+                Err(e) => return Err(e), // Pass along the error from vector_sum
+            }
         }
+
+        // returns summed matrix.
+        Ok(result)
+        
     }
 
-    pub fn mx_scalar(&self, scalar_val: f64) -> Option<Vec<Vec<f64>>> {
-        todo!();
+    // Matrix Scalar multiplication
+    pub fn scalar_mult(&self, scalar_val: f64) -> Result<Vec<Vec<f64>>, String> {
+        if self.main_matrix.iter().any(|v| v.is_empty()) {
+            return Err("Matrices cannot contain empty vectors".to_string());
+        } else if self.main_matrix.is_empty() {
+            return Err("Matrix cannot be empty".to_string());
+        }
+
+        if scalar_val == 0.0 {
+            println!("WARNING: Scalar value is 0.0");
+        }
+
+        let scaled_mx: Vec<Vec<f64>> = self.main_matrix
+            .iter()
+            .map(|row| row.iter().map(|&val| val * scalar_val).collect())
+            .collect();
+
+        Ok(scaled_mx)
+    }
+    
+    
+    // Create a Matrix Multiplication.
+    pub fn mx_mult(&self, matrix_2: Vec<Vec<f64>>) -> Result<Vec<Vec<f64>>, String> {
+        let rows_self = self.main_matrix.len();
+        let cols_self = self.main_matrix[0].len();
+        let rows_matrix_2 = matrix_2.len();
+        let cols_matrix_2 = matrix_2[0].len();
+    
+        // Check if matrix multiplication is possible
+        if cols_self != rows_matrix_2 {
+            return Err("Number of columns in the first matrix must be equal to the number of rows in the second matrix".to_string());
+        }
+    
+        // Check for empty vectors
+        if self.main_matrix.iter().any(|v| v.is_empty()) || matrix_2.iter().any(|v| v.is_empty()) {
+            return Err("Matrices cannot contain empty vectors".to_string());
+        }
+    
+        // Initialize the result matrix with the correct dimensions
+        let mut result: Vec<Vec<f64>> = vec![vec![0.0; cols_matrix_2]; rows_self];
+    
+        // Perform matrix multiplication
+        for i in 0..rows_self {
+            for j in 0..cols_matrix_2 {
+                for k in 0..cols_self {
+                    result[i][j] += self.main_matrix[i][k] * matrix_2[k][j];
+                }
+            }
+        }
+    
+        Ok(result)
     }
 
-    // Matrix Multiplication.
-    pub fn mx_mult(&self, matrix_2: Vec<Vec<f64>>) -> Option<Vec<Vec<f64>>> {
-        todo!();
-    }
+
+    
 }
+

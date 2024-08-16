@@ -1,4 +1,5 @@
 pub mod algos {
     pub mod array_ops;
-    pub mod ml;
+    pub mod nn;
+    pub mod preprocess;
 }
