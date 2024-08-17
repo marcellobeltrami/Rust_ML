@@ -1,26 +1,14 @@
 use csv::Reader;
-use csv::ReaderBuilder;
 use std::error::Error;
-use std::fs::File;
-use std::path::Path;
 use std::collections::HashMap;
 use std::vec;
+use serde_json::Value;
+
 
 pub struct Preprocess {}
 
 impl  Preprocess{
 
-
-    // Load CSV file and return csv object. Refer to CSV documentation (https://docs.rs/csv/latest/csv/)
-    fn load_csv(file_path: &str) -> Result<Reader<File>, Box<dyn Error>> {
-        
-        if !Path::new(file_path).exists() == false {
-            return Err("File not found".to_string().into());
-        }
-        
-        let rdr = ReaderBuilder::new().from_path(file_path)?;
-        Ok(rdr)
-    }
 
     fn vec_round(x: Vec<f64>, dec_points: f64) -> Vec<f64>{
 
@@ -158,18 +146,87 @@ impl  Preprocess{
     }
 
 
+    /// Read csv to JSON. 
+    // Function to infer the data type
+    fn infer_type(value: &str) -> Value {
+        if let Ok(int_val) = value.parse::<i64>() {
+            Value::Number(int_val.into())
+        } else if let Ok(float_val) = value.parse::<f64>() {
+            // Handle floating-point numbers
+            Value::Number(serde_json::Number::from_f64(float_val).unwrap())
+        } else if let Ok(bool_val) = value.parse::<bool>() {
+            // Handle boolean values
+            Value::Bool(bool_val)
+        } else {
+            // Fallback to string if no other types matched
+            Value::String(value.to_string())
+        }
+    }
+
+    fn csv_to_json(file_path: &str) -> Result<Value, Box<dyn Error>> {
+        let mut rdr = Reader::from_path(file_path)?;
+        
+        // Get the headers
+        let headers = rdr.headers()?.clone();
+    
+        // Create a HashMap to hold the data
+        let mut data_map: HashMap<String, Vec<Value>> = HashMap::new();
+    
+        // Initialize the HashMap with empty vectors for each header
+        for header in headers.iter() {
+            data_map.insert(header.to_string(), Vec::new());
+        }
+    
+        // Process each record
+        for record in rdr.records() {
+            let record = record?;
+            for (header, value) in headers.iter().zip(record.iter()) {
+                if let Some(vec) = data_map.get_mut(header) {
+                    vec.push(Value::String(value.to_string()));
+                }
+            }
+        }
+    
+        // Convert HashMap to serde_json::Value
+        let json_value = Value::Object(data_map.into_iter()
+            .map(|(k, v)| (k, Value::Array(v)))
+            .collect());
+    
+        Ok(json_value)
+    }
+    
+    // Function to convert serde_json::Value into a HashMap<String, Vec<Value>>
+    fn json_to_hashmap(value: &Value) -> Result<HashMap<String, Vec<Value>>, Box<dyn Error>> {
+        let mut hashmap: HashMap<String, Vec<Value>> = HashMap::new();
+    
+        if let Value::Object(map) = value {
+            for (key, value) in map {
+                if let Value::Array(vec) = value {
+                    hashmap.insert(key.clone(), vec.to_vec());
+                } else {
+                    hashmap.insert(key.clone(), vec![value.clone()]);
+                }
+            }
+        } else {
+            return Err("Expected a JSON object".into());
+        }
+    
+        Ok(hashmap)
+    }
+    
+
+
     // Function merging all preprocessed vector_numerics in one matrix. This should be called by the user. 
     pub fn auto_preprocess(csv_file_path:&str, encoding_method: &str, scaling_method: &str) -> Result<Vec<Vec<f64>>, String> {
-        let mut  csv_obj = Preprocess::load_csv(csv_file_path).unwrap();
         
-        for result in csv_obj.records() {
-            // The iterator yields Result<StringRecord, Error>, so we check the
-            // error here.
-            let record = result;
-            println!("{:?}", record);
-        }
+        // converts csv to json
+        let json_data = Preprocess::csv_to_json(csv_file_path).unwrap();
+        
+        // converts json to a hashmap. 
+        let hashmap: Result<HashMap<String, Vec<Value>>, Box<dyn Error>> = Preprocess::json_to_hashmap(&json_data);
+        
 
-
+        
         todo!()
     }
 

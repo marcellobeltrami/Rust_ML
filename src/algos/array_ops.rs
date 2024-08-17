@@ -1,5 +1,4 @@
 use std::vec;
-use std::collections::HashMap;
 
 // Linear Algebra Vector operations
 pub struct Vector {}
