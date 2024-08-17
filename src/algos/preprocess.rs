@@ -10,8 +10,9 @@ pub struct Preprocess {}
 
 impl  Preprocess{
 
+
     // Load CSV file and return csv object. Refer to CSV documentation (https://docs.rs/csv/latest/csv/)
-    pub fn load_csv(file_path: &str) -> Result<Reader<File>, Box<dyn Error>> {
+    fn load_csv(file_path: &str) -> Result<Reader<File>, Box<dyn Error>> {
         
         if !Path::new(file_path).exists() == false {
             return Err("File not found".to_string().into());
@@ -20,7 +21,18 @@ impl  Preprocess{
         let rdr = ReaderBuilder::new().from_path(file_path)?;
         Ok(rdr)
     }
-    
+
+    fn vec_round(x: Vec<f64>, dec_points: f64) -> Vec<f64>{
+
+        x.iter().map(|x| (x * dec_points).round() / dec_points).collect()
+
+        
+    }
+
+    // converts intgers to floats
+    fn int_to_float(x: Vec<i32>) -> Vec<f64>{
+        x.iter().map(|x| *x as f64).collect()
+    }
 
     // Scale vector_numerics of numerical values based on different methods 
     // Each function access the object, scales/encodes and returns a matrix 
@@ -35,7 +47,7 @@ impl  Preprocess{
         
         let result:Vec<f64> = vector_numeric.iter().map(|x| x.ln()).collect();
         
-        let result_rounded:Vec<f64> = result.iter().map(|x| (x * 100000.0).round()/ 100000.0).collect();
+        let result_rounded = Preprocess::vec_round(result, 100000.0);
         
         Ok(result_rounded)
     }
@@ -94,12 +106,13 @@ impl  Preprocess{
         // calculate robust scaling values returninh them as a vector in their original position.
         let result:Vec<f64> = vector_numeric.iter().map(|x| (x - median) / (upper_quartile - low_quartile)).collect();
         
+        let res_rounded = Preprocess::vec_round(result, 100000.0); // rounds vecor to 5 decimal places
 
-        Ok(result)
+        Ok(res_rounded)
 
     }
 
-    pub fn standardization_scaling(vector_numeric: Vec<f64>) -> Result<Vec<f64>, String> {
+    pub fn standard_scaling(vector_numeric: Vec<f64>) -> Result<Vec<f64>, String> {
         
         if vector_numeric.is_empty() == true {
             return Err("vector_numeric cannot be empty".to_string());
@@ -109,10 +122,19 @@ impl  Preprocess{
         let std_dev = (vector_numeric.iter().map(|x| (x - mean).powi(2)).sum::<f64>() / vector_numeric.len() as f64).sqrt();
         let result = vector_numeric.iter().map(|x| (x - mean) / std_dev).collect();
 
-        Ok(result)
+        let res_rounded = Preprocess::vec_round(result, 10000.0);
+        Ok(res_rounded)
     }
+    
+    
     // Encoding methods for categorical data.
     pub fn label_encoding(vector_categorical: Vec<String>) -> Result<Vec<f64>, String> {
+        
+        if vector_categorical.is_empty() == true {
+            return Err("vector_categorical cannot be empty".to_string());
+        }
+        
+        
         let mut hash_map: HashMap<String, usize> = HashMap::new();
         for (i, val) in vector_categorical.iter().enumerate() {
             hash_map.entry(val.to_string()).or_insert(i);
@@ -137,11 +159,24 @@ impl  Preprocess{
 
 
     // Function merging all preprocessed vector_numerics in one matrix. This should be called by the user. 
-    pub fn merge_preprocess(csv_object:Reader<File>, encoding_method: &str, scaling_method: &str) -> Result<Vec<Vec<f64>>, String> {
+    pub fn auto_preprocess(csv_file_path:&str, encoding_method: &str, scaling_method: &str) -> Result<Vec<Vec<f64>>, String> {
+        let mut  csv_obj = Preprocess::load_csv(csv_file_path).unwrap();
+        
+        for result in csv_obj.records() {
+            // The iterator yields Result<StringRecord, Error>, so we check the
+            // error here.
+            let record = result;
+            println!("{:?}", record);
+        }
+
+
         todo!()
     }
 
+
+
 }
+
 
 
 
