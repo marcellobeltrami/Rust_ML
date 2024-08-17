@@ -39,7 +39,7 @@ fn robust_scaling_test_valid() {
     let vec_test: Vec<f64> = vec![1.0, 3.0, 2.0, 5.0];
 
 
-    let expected: Vec<f64> = vec![-0.8571, 0.2857, -0.2857, 1.4286];
+    let expected: Vec<f64> = vec![-0.85714, 0.28571, -0.28571, 1.42857];
     let result = preprocess::Preprocess::robust_scaling(vec_test);
     
     assert_eq!(result, Ok(expected.clone()), "Expected {:?} but got {:?}",expected, result);
