@@ -217,7 +217,7 @@ impl  Preprocess{
 
 
     // Function merging all preprocessed vector_numerics in one matrix. This should be called by the user. 
-    pub fn auto_preprocess(csv_file_path:&str, encoding_method: &str, scaling_method: &str) -> Result<Vec<Vec<f64>>, String> {
+    pub fn import_csv(csv_file_path:&str) -> Result<Vec<Vec<f64>>, String> {
         
         // converts csv to json
         let json_data = Preprocess::csv_to_json(csv_file_path).unwrap();
@@ -225,9 +225,28 @@ impl  Preprocess{
         // converts json to a hashmap. 
         let hashmap: Result<HashMap<String, Vec<Value>>, Box<dyn Error>> = Preprocess::json_to_hashmap(&json_data);
         
+        let mut _vector_numeric: Vec<f64> = vec![];
 
         
-        todo!()
+        match hashmap {
+            Ok(hashmap) => {
+                let mut vector_numeric: Vec<Vec<f64>> = vec![];
+                for (_, vec) in hashmap {
+                    let mut vec_f64: Vec<f64> = vec![];
+                    for val in vec {
+                        match val.as_f64() {
+                            Some(f) => vec_f64.push(f),
+                            None => return Err("Expected a JSON array of numbers".to_string()),
+                        }
+                    }
+                    vector_numeric.push(vec_f64);
+                }
+                println!("Preprocessed {} labels", vector_numeric.len());
+                Ok(vector_numeric)
+            },
+            Err(e) => Err(e.to_string()),
+        }
+
     }
 
 
