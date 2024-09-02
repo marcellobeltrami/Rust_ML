@@ -172,7 +172,7 @@ impl Matrix {
     }
 
     // Matrix Scalar multiplication
-    pub fn scalar_mult(&self, scalar_val: f64) -> Result<Vec<Vec<f64>>, String> {
+    pub fn scale(&self, scalar_val: f64) -> Result<Vec<Vec<f64>>, String> {
         if self.main_matrix.iter().any(|v| v.is_empty()) {
             return Err("Matrices cannot contain empty vectors".to_string());
         } else if self.main_matrix.is_empty() {
@@ -192,7 +192,7 @@ impl Matrix {
     }
     
     
-    // Create a Matrix Multiplication.
+    // Carries out Multiplication between two matrices of different size (columns of j must be equal to rows of i).
     pub fn mx_mult(&self, matrix_2: Vec<Vec<f64>>) -> Result<Vec<Vec<f64>>, String> {
         let rows_self = self.main_matrix.len();
         let cols_self = self.main_matrix[0].len();
@@ -224,7 +224,23 @@ impl Matrix {
         Ok(result)
     }
 
-
-    
+    // Matrix-Vector Multiplication by a vector FIXME
+    pub fn vec_multiplication(&self, vector: Vec<f64>) -> Result<Vec<f64>, String> {
+        if self.main_matrix.len() == 0 || vector.len() == 0 {
+            return Err("Matrix and vector cannot be empty".to_string());    
+        } else if self.main_matrix[1].len() != vector.len() {
+            return  Err("Matrix must have same number of rows as vector length".to_string());
+        } else {
+            let mut result = vec![];
+            for i in 0..self.main_matrix.len() {
+                let mut temp = 0.0;
+                for j in 0..self.main_matrix[i].len() {
+                    temp += self.main_matrix[i][j] * vector[j];
+                }
+                result.push(temp);
+            }
+            return Ok(result);
+        }
+               
+    }   
 }
-

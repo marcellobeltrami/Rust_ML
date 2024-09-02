@@ -101,7 +101,7 @@ fn mx_mult_valid() {
 
 
 #[test]
-fn scalar_mult_valid() {
+fn scale_valid() {
     let mx_1: Vec<Vec<f64>> = vec![
         vec![1.0, 3.0], 
         vec![2.0, 5.0]
@@ -116,36 +116,56 @@ fn scalar_mult_valid() {
         vec![4.0, 10.0]
     ];
 
-    let result = mx1.scalar_mult(scalar);
+    let result = mx1.scale(scalar);
 
     assert_eq!(result, Ok(expected_result.clone()), "Expected {:?}, but got {:?}", expected_result, result);
 }
 
 
 #[test]
-fn scalar_mult_invalid_mx() {
+fn scale_invalid_mx() {
     let mx_1: Vec<Vec<f64>> = vec![];
 
     let mx1 = Matrix { main_matrix: mx_1 };
 
     let scalar = 2.0;
 
-    let result = mx1.scalar_mult(scalar);
+    let result = mx1.scale(scalar);
 
     assert_eq!(result, Err("Matrix cannot be empty".to_string()),
      "Expected 'Err(Matrix cannot be empty)', but got {:?}",result);
 }
 
 #[test]
-fn scalar_mult_invalid_vectors() {
+fn scale_invalid_vectors() {
     let mx_1: Vec<Vec<f64>> = vec![vec![]];
 
     let mx1 = Matrix { main_matrix: mx_1 };
 
     let scalar = 2.0;
 
-    let result = mx1.scalar_mult(scalar);
+    let result = mx1.scale(scalar);
 
     assert_eq!(result, Err("Matrices cannot contain empty vectors".to_string()), 
     "Expected 'Err(Matrices cannot contain empty vectors)', but got {:?}", result);
+}
+
+
+// Matrix transpose tests FIX
+
+fn vector_by_matrix() {
+    let mx_1: Vec<Vec<f64>> = vec![
+        vec![1.0, 2.0],
+        vec![3.0, 4.0],
+        vec![5.0, 6.0]
+    ];
+
+    let mx1 = Matrix { main_matrix: mx_1 };
+
+    let vector = vec![0.5, 0.5];
+    let expected_result = vec![1.5, 3.5, 5.5];
+
+    let result = mx1.vec_multiplication(vector).unwrap();
+
+    assert_eq!(result, expected_result);
 }
